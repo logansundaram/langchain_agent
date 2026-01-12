@@ -1,11 +1,13 @@
 # pip install -qU langchain 
 from langchain.agents import create_agent
 from langchain_ollama import ChatOllama
+from langchain.messages import SystemMessage, HumanMessage
+from langchain.tools import tool
 
 llm = ChatOllama(model="gpt-oss:20B")
 
+@tool
 def get_weather(city: str) -> str:
-    """Get weather for a given city."""
     return f"It's always sunny in {city}!"
 
 agent = create_agent(
@@ -14,10 +16,15 @@ agent = create_agent(
     system_prompt="You are a helpful assistant",
 )
 
-# Run the agent
-answer = agent.invoke(
-    {"messages": [{"role": "user", "content": "what is the weather in sf"}]}
-)
+messages = []
 
+while True:
+    query = input("you: ")
+    messages.append(HumanMessage(content=query))
 
-answer
+    result = agent.invoke({"messages": messages})
+
+    messages = result["messages"]
+
+    for m in messages:
+        m.pretty_print()
